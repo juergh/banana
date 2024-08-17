@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+import sys
+
+import click
+
+from banana import db, error, log
+
+
+@click.command()
+@click.option("--debug", is_flag=True)
+@click.option("--fail-commit-id-exists", is_flag=True)
+@click.option("--fail-invalid-input", is_flag=True)
+@click.argument("db_filename")
+def main(debug, fail_commit_id_exists, fail_invalid_input, db_filename):
+    """Read patch and commit IDs from stdin and insert them into the database."""
+    if debug:
+        log.init(log_level=log.DEBUG)
+
+    mydb = db.DataBase(db_filename)
+    for line in sys.stdin:
+        try:
+            patch_id, commit_id = line.strip().split(" ")
+        except ValueError:
+            print(f"Invalid input: {line.strip()}", file=sys.stderr)
+            if fail_invalid_input:
+                sys.exit(1)
+
+        try:
+            mydb.patch_id.insert(commit_id=commit_id, patch_id=patch_id)
+        except error.CommitIdExistsError:
+            print(f"Commit exists already: {commit_id}", file=sys.stderr)
+            if fail_commit_id_exists:
+                sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()  # pylint: disable=E1120

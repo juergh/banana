@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+import click
+import git
+
+from banana import db, error
+
+
+@click.command()
+@click.argument("db_filename")
+@click.argument("rev_range")
+def main(db_filename, rev_range):
+    """Insert commit details into the database."""
+    mydb = db.DataBase(db_filename)
+    repo = git.Repo(os.getcwd())
+    for commit in repo.iter_commits(rev_range):
+        if len(commit.parents) != 1:
+            continue
+
+        try:
+            mydb.commit.insert_commit(commit)
+        except error.CommitIdExistsError:
+            print(f"Commit exists already: {commit}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()  # pylint: disable=E1120

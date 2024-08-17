@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+import sys
+
+import click
+
+from banana import db, log
+
+
+def get_table(db, table):
+    try:
+        return getattr(db, table)
+    except AttributeError:
+        print(f"Invalid table name: {table}", file=sys.stderr)
+        sys.exit(1)
+
+
+@click.group()
+@click.option("--verbose", is_flag=True)
+@click.option("--debug", is_flag=True)
+@click.argument("db_filename")
+@click.pass_context
+def main(ctx, verbose, debug, db_filename):
+    ctx.obj = {
+        "db_filename": db_filename,
+    }
+    if debug:
+        log.init(log_level=log.DEBUG)
+    elif verbose:
+        log.init(log_level=log.INFO)
+
+
+@click.command()
+@click.pass_context
+def init(ctx):
+    """Initialize a database"""
+    db_filename = ctx.obj["db_filename"]
+    mydb = db.DataBase(db_filename)
+    mydb.init()
+    print(f"Database {db_filename} initialized")
+
+
+@click.command()
+@click.pass_context
+def dump(ctx):
+    """Dump a database"""
+    db_filename = ctx.obj["db_filename"]
+    mydb = db.DataBase(db_filename)
+    mydb.dump()
+
+
+@click.command(context_settings={"allow_extra_args": True})
+@click.pass_context
+@click.argument("table")
+def select(ctx, table):
+    """Select a database row"""
+    kwargs = {}
+    for arg in ctx.args:
+        k, v = arg.split("=")
+        kwargs[k] = v
+
+    db_filename = ctx.obj["db_filename"]
+    mydb = db.DataBase(db_filename)
+    mytable = get_table(mydb, table)
+    for row in mytable.select(**kwargs):
+        print(row)
+
+
+main.add_command(init)
+main.add_command(dump)
+main.add_command(select)
+
+if __name__ == "__main__":
+    main()  # pylint: disable=E1120
