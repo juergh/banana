@@ -6,14 +6,18 @@ import sys
 import click
 import git
 
-from banana import db, error
+from banana import db, error, log
 
 
 @click.command()
+@click.option("--debug", is_flag=True)
 @click.argument("db_filename")
 @click.argument("rev_range")
-def main(db_filename, rev_range):
+def main(debug, db_filename, rev_range):
     """Insert commit details into the database."""
+    if debug:
+        log.init(log_level=log.DEBUG)
+
     mydb = db.DataBase(db_filename)
     repo = git.Repo(os.getcwd())
     for commit in repo.iter_commits(rev_range):
