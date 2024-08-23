@@ -58,10 +58,11 @@ class BaseTable:
         # Convert the cols array to an sqlite formatting string
         cols = ",".join(self.cols)
 
-        with sq3.connect(self.db, autocommit=True) as con:
+        with sq3.connect(self.db) as con:
             con.set_trace_callback(LOG.debug)
             cur = con.cursor()
             cur.execute(f"CREATE TABLE {self.name} ({cols})")
+            con.commit()
 
     @trace
     def exists(self):
@@ -91,7 +92,7 @@ class BaseTable:
         """Insert a new row"""
         self.check_kwargs(kwargs)
 
-        with sq3.connect(self.db, autocommit=True) as con:
+        with sq3.connect(self.db) as con:
             con.set_trace_callback(LOG.debug)
             cur = con.cursor()
 
@@ -113,6 +114,7 @@ class BaseTable:
 
             # Insert the new row
             cur.execute(f"INSERT INTO {self.name} VALUES ({fmt})", vals)
+            con.commit()
 
     @trace
     def select(self, **kwargs):
