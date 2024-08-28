@@ -177,10 +177,22 @@ class CommitTable(BaseTable):
         self.insert(**self.dict_from_commit(commit))
 
 
+class FixesTable(BaseTable):
+    """Table containing Fixes"""
+
+    name = "_fixes"
+    cols = TABLE_COMMON_COLS + [
+        "commit_id",
+        "fixes",
+        "fixes_id",
+    ]
+
+
 class DataBase:
     def __init__(self, db_filename):
         self.patch_id = PatchIdTable(db_filename)
         self.commit = CommitTable(db_filename)
+        self.fixes = FixesTable(db_filename)
 
     def init(self):
         """Create all tables"""
@@ -188,6 +200,8 @@ class DataBase:
             self.patch_id.create()
         if not self.commit.exists():
             self.commit.create()
+        if not self.fixes.exists():
+            self.fixes.create()
 
     def dump(self):
         """Dump tables"""
@@ -198,4 +212,8 @@ class DataBase:
         if self.commit.exists():
             print("Table(commit):")
             for row in self.commit.dump():
+                print(row)
+        if self.fixes.exists():
+            print("Table(fixes):")
+            for row in self.fixes.dump():
                 print(row)
