@@ -17,3 +17,7 @@ class InvalidIdError(Error):
 
 class InvalidColumnError(Error):
     pass
+
+
+class MissingColumnError(Error):
+    pass

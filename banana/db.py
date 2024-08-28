@@ -53,6 +53,10 @@ class BaseTable:
             if key.endswith("_id") and not RE_ID.match(val):
                 raise error.InvalidIdError(f"Table({self.name}): {key}={val}")
 
+        # for c in self.unique_cols:
+        #     if c not in kwargs:
+        #         raise error.MissingColumnError(f"Table({self.name}): column={c}")
+
     def check_row_exists(self, cur, kwargs):
         """Check if a row exists"""
         if not self.unique_cols:
