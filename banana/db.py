@@ -44,7 +44,7 @@ class BaseTable:
         """Convert a dict to a table column list"""
         return [kwargs.get(c, "") for c in self.cols]
 
-    def check_kwargs(self, kwargs):
+    def check_kwargs_sane(self, kwargs):
         """Sanity check"""
         for key, val in kwargs.items():
             if key not in self.cols:
@@ -90,7 +90,7 @@ class BaseTable:
     @trace
     def insert(self, **kwargs):
         """Insert a new row"""
-        self.check_kwargs(kwargs)
+        self.check_kwargs_sane(kwargs)
 
         with sq3.connect(self.db) as con:
             con.set_trace_callback(LOG.debug)
@@ -119,7 +119,7 @@ class BaseTable:
     @trace
     def select(self, **kwargs):
         """Return select rows"""
-        self.check_kwargs(kwargs)
+        self.check_kwargs_sane(kwargs)
 
         # Create the sqlite query string
         # FIXME: Use fmt string and vals list (like in 'insert' above)
