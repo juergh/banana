@@ -7,7 +7,7 @@ class Error(Exception):
     pass
 
 
-class CommitIdExistsError(Error):
+class RowExistsError(Error):
     pass
 
 

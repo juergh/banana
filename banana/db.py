@@ -36,6 +36,7 @@ class BaseTable:
 
     name = None
     cols = None
+    unique_cols = None
 
     def __init__(self, db):
         self.db = db
@@ -51,6 +52,19 @@ class BaseTable:
                 raise error.InvalidColumnError(f"Table({self.name}): column={key}")
             if key.endswith("_id") and not RE_ID.match(val):
                 raise error.InvalidIdError(f"Table({self.name}): {key}={val}")
+
+    def check_row_exists(self, cur, kwargs):
+        """Check if a row exists"""
+        if not self.unique_cols:
+            return
+
+        queries = [f"{c}=?" for c in self.unique_cols]
+        where = " AND ".join(queries)
+        vals = [kwargs[c] for c in self.unique_cols]
+
+        cur.execute(f"SELECT * FROM {self.name} WHERE {where}", vals)
+        if cur.fetchone():
+            raise error.RowExistsError(f"Table({self.name}): {where} -- {vals}")
 
     @trace
     def create(self):
@@ -97,11 +111,7 @@ class BaseTable:
             cur = con.cursor()
 
             # Check if the row exists already
-            commit_id = kwargs.get("commit_id")
-            if commit_id:
-                cur.execute(f"SELECT * FROM {self.name} WHERE commit_id=?", [commit_id])
-                if cur.fetchone():
-                    raise error.CommitIdExistsError(f"Table({self.name}): commit_id={commit_id}")
+            self.check_row_exists(cur, kwargs)
 
             # Create row ID and timestamps
             kwargs["id"] = str(uuid.uuid4())
@@ -143,6 +153,7 @@ class PatchIdTable(BaseTable):
         "commit_id",
         "patch_id",
     ]
+    unique_cols = ["commit_id"]
 
 
 class CommitTable(BaseTable):
@@ -158,6 +169,7 @@ class CommitTable(BaseTable):
         "author_email",
         "authored_at",
     ]
+    unique_cols = ["commit_id"]
 
     @staticmethod
     def dict_from_commit(commit):
@@ -186,6 +198,7 @@ class FixesTable(BaseTable):
         "fixes",
         "fixes_id",
     ]
+    unique_cols = ["commit_id", "fixes"]
 
 
 class DataBase:
