@@ -4,7 +4,7 @@ import sys
 
 import click
 
-from banana import db, log
+import banana
 
 
 def get_table(db, table):
@@ -25,9 +25,9 @@ def main(ctx, verbose, debug, db_filename):
         "db_filename": db_filename,
     }
     if debug:
-        log.init(log_level=log.DEBUG)
+        banana.Logger_init(log_level="debug")
     elif verbose:
-        log.init(log_level=log.INFO)
+        banana.Logger_init(log_level="info")
 
 
 @click.command()
@@ -35,7 +35,7 @@ def main(ctx, verbose, debug, db_filename):
 def init(ctx):
     """Initialize a database"""
     db_filename = ctx.obj["db_filename"]
-    mydb = db.DataBase(db_filename)
+    mydb = banana.DataBase(db_filename)
     mydb.init()
     print(f"Database {db_filename} initialized")
 
@@ -45,7 +45,7 @@ def init(ctx):
 def dump(ctx):
     """Dump a database"""
     db_filename = ctx.obj["db_filename"]
-    mydb = db.DataBase(db_filename)
+    mydb = banana.DataBase(db_filename)
     mydb.dump()
 
 
@@ -60,7 +60,7 @@ def select(ctx, table):
         kwargs[k] = v
 
     db_filename = ctx.obj["db_filename"]
-    mydb = db.DataBase(db_filename)
+    mydb = banana.DataBase(db_filename)
     mytable = get_table(mydb, table)
     for row in mytable.select(**kwargs):
         print(row)

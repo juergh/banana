@@ -5,11 +5,7 @@
 import logging
 import sys
 
-INFO = logging.INFO
-DEBUG = logging.DEBUG
-ERROR = logging.ERROR
-
-logger = logging.getLogger
+Logger = logging.getLogger
 
 
 class _StreamToLogger:
@@ -25,13 +21,18 @@ class _StreamToLogger:
             self.logger.log(self.level, message)
 
 
-def init(redirect_stdio=False, log_to_stdout=True, log_level=INFO):
+def Logger_init(redirect_stdio=False, log_to_stdout=True, log_level="info"):
     """Initialize/configure the logger"""
 
     log_format = "%(asctime)s - %(levelname)s - %(name)s : %(message)s"
+    log_level_map = {
+        "info": logging.INFO,
+        "debug": logging.DEBUG,
+        "error": logging.ERROR,
+    }
 
     if log_to_stdout:
-        logging.basicConfig(stream=sys.stdout, format=log_format, level=log_level)
+        logging.basicConfig(stream=sys.stdout, format=log_format, level=log_level_map[log_level])
     #    else:
     #        logging.basicConfig(filename=CONF.dwarf_log, format=log_format,
     #                            level=log_level)
@@ -39,5 +40,5 @@ def init(redirect_stdio=False, log_to_stdout=True, log_level=INFO):
     if redirect_stdio:
         # Redirect stdout and stderr to the logger
         logger = logging.getLogger(__name__)
-        sys.stdout = _StreamToLogger(logger, INFO)
-        sys.stderr = _StreamToLogger(logger, ERROR)
+        sys.stdout = _StreamToLogger(logger, logging.INFO)
+        sys.stderr = _StreamToLogger(logger, logging.ERROR)

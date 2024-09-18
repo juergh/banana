@@ -7,9 +7,9 @@ import sqlite3 as sq3
 import time
 import uuid
 
-from banana import error, log
+from . import error, log
 
-LOG = log.logger(__name__)
+LOG = log.Logger(__name__)
 
 TABLE_COMMON_COLS = ["id", "created_at", "updated_at"]
 

@@ -6,7 +6,7 @@ import sys
 import click
 import git
 
-from banana import db, error, log
+import banana
 
 
 @click.command()
@@ -16,9 +16,9 @@ from banana import db, error, log
 def main(debug, db_filename, rev_range):
     """Insert commit details into the database."""
     if debug:
-        log.init(log_level=log.DEBUG)
+        banana.Logger_init(log_level="debug")
 
-    mydb = db.DataBase(db_filename)
+    mydb = banana.DataBase(db_filename)
     repo = git.Repo(os.getcwd())
     for commit in repo.iter_commits(rev_range):
         if len(commit.parents) != 1:
@@ -26,7 +26,7 @@ def main(debug, db_filename, rev_range):
 
         try:
             mydb.commit.insert_commit(commit)
-        except error.CommitIdExistsError:
+        except banana.RowExistsError:
             print(f"Commit exists already: {commit}", file=sys.stderr)
 
 
