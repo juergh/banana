@@ -16,8 +16,8 @@ def get_table(db, table):
 
 
 @click.group()
-@click.option("--verbose", is_flag=True)
-@click.option("--debug", is_flag=True)
+@click.option("--verbose/--no-verbose", default=False)
+@click.option("--debug/--no-debug", default=False)
 @click.argument("db_filename")
 @click.pass_context
 def main(ctx, verbose, debug, db_filename):
@@ -25,9 +25,9 @@ def main(ctx, verbose, debug, db_filename):
         "db_filename": db_filename,
     }
     if debug:
-        banana.Logger_init(log_level="debug")
+        banana.config_logger(level="debug")
     elif verbose:
-        banana.Logger_init(log_level="info")
+        banana.config_logger(level="info")
 
 
 @click.command()

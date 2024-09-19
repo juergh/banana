@@ -18,4 +18,4 @@ MissingColumnError = error.MissingColumnError
 
 # log
 Logger = log.Logger
-Logger_init = log.Logger_init
+config_logger = log.config

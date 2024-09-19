@@ -15,7 +15,7 @@ import banana
 def main(debug, fail_commit_id_exists, fail_invalid_input, db_filename):
     """Read patch and commit IDs from stdin and insert them into the database."""
     if debug:
-        banana.Logger_init(log_level="debug")
+        banana.config_logger(level="debug")
 
     mydb = banana.DataBase(db_filename)
     for line in sys.stdin:
