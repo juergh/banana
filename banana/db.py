@@ -35,6 +35,7 @@ class BaseTable:
     """Base table class"""
 
     name = None
+    data_cols = None
     unique_cols = None
     all_cols = None
 
@@ -148,6 +149,11 @@ class BaseTable:
             for row in cur.fetchall():
                 yield dict(zip(row.keys(), row))
 
+    @trace
+    def insert_commit(self, commit):
+        """Insert a commit into the table"""
+        self.insert(**commit.to_dict(self.data_cols))
+
 
 class PatchIdTable(BaseTable):
     """Table containing Patch IDs"""
@@ -176,23 +182,6 @@ class CommitTable(BaseTable):
     ]
     unique_cols = ["commit_id"]
     all_cols = TABLE_COMMON_COLS + data_cols
-
-    @staticmethod
-    def dict_from_commit(commit):
-        return {
-            "commit_id": commit.hexsha,
-            "subject": commit.message.split("\n")[0],
-            "details": commit.message,
-            "committed_at": commit.committed_date,
-            "author_name": commit.author.name,
-            "author_email": commit.author.email,
-            "authored_at": commit.authored_date,
-        }
-
-    @trace
-    def insert_commit(self, commit):
-        """Insert a commit into the table"""
-        self.insert(**self.dict_from_commit(commit))
 
 
 class FixesTable(BaseTable):
