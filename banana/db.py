@@ -35,20 +35,20 @@ class BaseTable:
     """Base table class"""
 
     name = None
-    cols = None
     unique_cols = None
+    all_cols = None
 
     def __init__(self, db):
         self.db = db
 
     def kwargs_to_vals(self, kwargs):
         """Convert a dict to a table column list"""
-        return [kwargs.get(c, "") for c in self.cols]
+        return [kwargs.get(c, "") for c in self.all_cols]
 
     def check_kwargs_sane(self, kwargs):
         """Sanity check"""
         for key, val in kwargs.items():
-            if key not in self.cols:
+            if key not in self.all_cols:
                 raise error.InvalidColumnError(f"Table({self.name}): column={key}")
             if key.endswith("_id") and not RE_ID.match(val):
                 raise error.InvalidIdError(f"Table({self.name}): {key}={val}")
@@ -74,7 +74,7 @@ class BaseTable:
     def create(self):
         """Create the table"""
         # Convert the cols array to an sqlite formatting string
-        cols = ",".join(self.cols)
+        cols = ",".join(self.all_cols)
 
         with sq3.connect(self.db) as con:
             con.set_trace_callback(LOG.debug)
@@ -123,7 +123,7 @@ class BaseTable:
             kwargs["updated_at"] = kwargs["created_at"]
 
             # Create the sqlite formatting string and values list
-            fmt = ",".join(["?" for c in self.cols])
+            fmt = ",".join(["?" for c in self.all_cols])
             vals = self.kwargs_to_vals(kwargs)
 
             # Insert the new row
@@ -158,7 +158,7 @@ class PatchIdTable(BaseTable):
         "patch_id",
     ]
     unique_cols = ["commit_id"]
-    cols = TABLE_COMMON_COLS + data_cols
+    all_cols = TABLE_COMMON_COLS + data_cols
 
 
 class CommitTable(BaseTable):
@@ -175,7 +175,7 @@ class CommitTable(BaseTable):
         "authored_at",
     ]
     unique_cols = ["commit_id"]
-    cols = TABLE_COMMON_COLS + data_cols
+    all_cols = TABLE_COMMON_COLS + data_cols
 
     @staticmethod
     def dict_from_commit(commit):
@@ -205,7 +205,7 @@ class FixesTable(BaseTable):
         "fixes_id",
     ]
     unique_cols = ["commit_id", "fixes"]
-    cols = TABLE_COMMON_COLS + data_cols
+    all_cols = TABLE_COMMON_COLS + data_cols
 
 
 class DataBase:
