@@ -155,18 +155,6 @@ class BaseTable:
         self.insert(**commit.to_dict(self.data_cols))
 
 
-class PatchIdTable(BaseTable):
-    """Table containing Patch IDs"""
-
-    name = "_patch_id"
-    data_cols = [
-        "commit_id",
-        "patch_id",
-    ]
-    unique_cols = ["commit_id"]
-    all_cols = TABLE_COMMON_COLS + data_cols
-
-
 class CommitTable(BaseTable):
     """Table containing Commit details"""
 
@@ -179,6 +167,18 @@ class CommitTable(BaseTable):
         "author_name",
         "author_email",
         "authored_at",
+    ]
+    unique_cols = ["commit_id"]
+    all_cols = TABLE_COMMON_COLS + data_cols
+
+
+class PatchIdTable(BaseTable):
+    """Table containing Patch IDs"""
+
+    name = "_patch_id"
+    data_cols = [
+        "commit_id",
+        "patch_id",
     ]
     unique_cols = ["commit_id"]
     all_cols = TABLE_COMMON_COLS + data_cols
@@ -199,28 +199,28 @@ class FixesTable(BaseTable):
 
 class DataBase:
     def __init__(self, db_filename):
-        self.patch_id = PatchIdTable(db_filename)
         self.commit = CommitTable(db_filename)
+        self.patch_id = PatchIdTable(db_filename)
         self.fixes = FixesTable(db_filename)
 
     def init(self):
         """Create all tables"""
-        if not self.patch_id.exists():
-            self.patch_id.create()
         if not self.commit.exists():
             self.commit.create()
+        if not self.patch_id.exists():
+            self.patch_id.create()
         if not self.fixes.exists():
             self.fixes.create()
 
     def dump(self):
         """Dump tables"""
-        if self.patch_id.exists():
-            print("Table(patch_id):")
-            for row in self.patch_id.dump():
-                print(row)
         if self.commit.exists():
             print("Table(commit):")
             for row in self.commit.dump():
+                print(row)
+        if self.patch_id.exists():
+            print("Table(patch_id):")
+            for row in self.patch_id.dump():
                 print(row)
         if self.fixes.exists():
             print("Table(fixes):")
