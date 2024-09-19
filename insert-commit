@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import subprocess
 import sys
 
 import click
@@ -9,25 +10,55 @@ import git
 import banana
 
 
+def git_patch_id(commit):
+    """Return the patch ID for the given commit"""
+    git_show = subprocess.Popen(
+        ["git", "--git-dir", commit.repo.git_dir, "show", commit.hexsha],
+        stdout=subprocess.PIPE,
+    )
+    patch_id = subprocess.check_output(["git", "patch-id"], stdin=git_show.stdout)
+    git_show.wait()
+
+    return patch_id.decode().strip().split()[0]
+
+
 @click.command()
-@click.option("--debug", is_flag=True)
+@click.option("--debug/--no-debug", default=False)
+@click.option("--patch-id/--no-patch-id", default=False)
+@click.option("--provenance", default="linux")
 @click.argument("db_filename")
 @click.argument("rev_range")
-def main(debug, db_filename, rev_range):
+def main(debug, patch_id, provenance, db_filename, rev_range):
     """Insert commit details into the database."""
     if debug:
-        banana.Logger_init(log_level="debug")
+        banana.config_logger(level="debug")
 
+    if provenance == "linux" and not patch_id:
+        print("Enable --patch-id for provenance 'linux'")
+        patch_id = True
+
+    mypatchid = None
     mydb = banana.DataBase(db_filename)
     repo = git.Repo(os.getcwd())
     for commit in repo.iter_commits(rev_range):
         if len(commit.parents) != 1:
             continue
 
+        if patch_id:
+            mypatchid = git_patch_id(commit)
+
+        mycommit = banana.Commit(commit, patch_id=mypatchid, provenance=provenance)
+
         try:
-            mydb.commit.insert_commit(commit)
+            mydb.commit.insert_commit(mycommit)
         except banana.RowExistsError:
-            print(f"Commit exists already: {commit}", file=sys.stderr)
+            print(f"Table(commit): Commit exists already: {commit}", file=sys.stderr)
+
+        if patch_id:
+            try:
+                mydb.patch_id.insert_commit(mycommit)
+            except banana.RowExistsError:
+                print(f"Table(patch_id): Commit exists already: {commit}", file=sys.stderr)
 
 
 if __name__ == "__main__":
