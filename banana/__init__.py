@@ -2,7 +2,10 @@
 # Banana __init__
 #
 
-from . import db, error, log
+from . import commit, db, error, log
+
+# commit
+Commit = commit.Commit
 
 # db
 DataBase = db.DataBase
