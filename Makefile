@@ -1,6 +1,6 @@
 all: ruff black
 
-PY_FILES = db-cli insert-commit insert-patch-id banana/*.py
+PY_FILES = db-cli insert-commit banana/*.py
 
 pylint:
 	pylint --disable R0903,W0511 $(PY_FILES)
