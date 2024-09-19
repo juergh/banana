@@ -153,18 +153,19 @@ class PatchIdTable(BaseTable):
     """Table containing Patch IDs"""
 
     name = "_patch_id"
-    cols = TABLE_COMMON_COLS + [
+    data_cols = [
         "commit_id",
         "patch_id",
     ]
     unique_cols = ["commit_id"]
+    cols = TABLE_COMMON_COLS + data_cols
 
 
 class CommitTable(BaseTable):
     """Table containing Commit details"""
 
     name = "_commit"
-    cols = TABLE_COMMON_COLS + [
+    data_cols = [
         "commit_id",
         "subject",
         "details",
@@ -174,6 +175,7 @@ class CommitTable(BaseTable):
         "authored_at",
     ]
     unique_cols = ["commit_id"]
+    cols = TABLE_COMMON_COLS + data_cols
 
     @staticmethod
     def dict_from_commit(commit):
@@ -197,12 +199,13 @@ class FixesTable(BaseTable):
     """Table containing Fixes"""
 
     name = "_fixes"
-    cols = TABLE_COMMON_COLS + [
+    data_cols = [
         "commit_id",
         "fixes",
         "fixes_id",
     ]
     unique_cols = ["commit_id", "fixes"]
+    cols = TABLE_COMMON_COLS + data_cols
 
 
 class DataBase:
